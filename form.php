@@ -1,121 +1,48 @@
 <?php
 
-require 'phpsqliteconnect/vendor/autoload.php';
+// FAIRE EN SORTE QUE CHAQUE RECETTE POSSEDE UN NUMERO
+// ET QUE LORSQUE ON CRÉE UNE NOUVELLE RECETTE LE NUM EST INCRÉMENTÉ
 
-use App\SQLiteConnection;
+function add_new_ingredient (float $quantity,string $unity,string $ingredient,int $recipe_number): void{
+    try {
+        $pdo = new PDO('sqlite:'.dirname(__FILE__).'/database.db');
+        $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+        $pdo->query('CREATE TABLE IF NOT EXISTS recipe (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            quantity INTEGER,
+            unity VARCHAR(50) NOT NULL,
+            ingredient VARCHAR(50) NOT NULL
+        )');
 
-function quantityVerif(float $quantity): bool
-{
-    return $quantity !== 0;
-}
-
-function unityVerif(string $unity): bool
-{
-    return $unity !== '';
-}
-
-function ingredientVerif(string $ingredient): bool
-{
-    return $ingredient !== '' && strlen($ingredient) <= 50;
-}
-
-
-$pdo = (new SQLiteConnection())->connect();
-if($pdo != null)
-    echo 'Connected to the SQLite database successfully!';
-else
-    echo 'Woops, could not connect to the SQLite databse!';
-
-
-/*
-$verif = 0;
-
-for ($i=0; $i < count($_POST)/3; $i++) { 
-    $quantity = htmlentities($_POST['quantity_'.$i]);
-    $unity = htmlentities($_POST['unity_'.$i]);
-    $ingredient = htmlentities($_POST['ingredient_'.$i]);
-    $verif++;
-
-    if($quantity && $unity && $ingredient){
-        //var_dump('Toutes les valeurs sont définies');
-        $verif--;
-    }
-}
-
-$host = 'localhost';
-$db = 'database';
-$username = 'user';
-$password = 'password';
-*/
-
-/*
-try {
-    echo('chips');
-    //$pdo = new PDO("pgsql:host='localhost';port=5432;dbname='database';user='username';password='password'");
-    $pdo = new PDO('sqlite:'.dirname(__FILE__).'/database.db');
-    echo('chips');
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    echo('chips');
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
+        if(preg_match('/^[-+]?[0-9]+(\.[0-9]+)?/',$quantity) &&
+            $unity != '' && $ingredient != ''
+            ) {
+            $statement = $pdo->prepare(
+                'INSERT INTO recipe (quantity,unity,ingredient) VALUES (:quantity,:unity,:ingredient)'
+            );
+            $statement->bindValue('quantity',$quantity,PDO::PARAM_INT);
+            $statement->bindValue('unity',$unity,PDO::PARAM_STR);
+            $statement->bindValue('ingredient',$ingredient,PDO::PARAM_STR);
+            $statement->execute();
+        }
     
-
-    $pdo->query('CREATE TABLE IF NOT EXISTS message (
-    id SERIAL NOT NULL,
-    quantity FLOAT,
-    unity VARCHAR(50) NOT NULL,
-    ingredient INTEGER
-    )');
-
-    if (
-        quantityVerif($quantity) &&
-        unityVerif($unity) &&
-        ingredientVerif($ingredient)
-    ) {
-        $statement = $pdo->prepare('INSERT INTO message (quantity, unity, ingredient) VALUES (:quantity, :unity, :ingredient)');
-        $statement->bindValue('quantity', $quantity);
-        $statement->bindValue('unity', $unity);
-        $statement->bindValue('subject', $subject);
-        $statement->bindValue('ingredient', $ingredient);
-        $statement->execute();
+    } catch (PDOException $exception){
+        var_dump($exception);
     }
-} catch (PDOException $exception) {
-    echo $exception->getMessage();
-    die();
 }
 
-header('Location: http://localhost:8080/index.php');
-*/
 
-
-
-
-/*
-$verif = 0;
+//$number = 0;
 
 for ($i=0; $i < count($_POST)/3; $i++) { 
-    $quantity = $_POST['quantity_'.$i];
-    $unity = $_POST['unity_'.$i];
-    $ingredient = $_POST['ingredient_'.$i];
-    $verif++;
+    $quantity = htmlspecialchars($_POST['quantity_'.$i]);
+    $unity = htmlspecialchars($_POST['unity_'.$i]);
+    $ingredient = htmlspecialchars($_POST['ingredient_'.$i]);
 
-    if($quantity && $unity && $ingredient){
-        //var_dump('Toutes les valeurs sont définies');
-        $verif--;
-    }
+    add_new_ingredient($quantity,$unity,$ingredient,$i);
 }
 
-if($verif == 0){
-    //$pdo = new PDO('pgsql:host=localhost;port=5432;dbname=database',getenv('USERNAME'),getenv('PASSWORD'));
-    $pdo = new PDO('sqlite:'.dirname(__FILE__).'/database.db');
-    $pdo->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+header('Location: http://localhost:8080/creator.php');
 
-    $pdo->query('CREATE TABLE IF NOT EXISTS recipe (
-        id SERIAL NOT NULL,
-        quantity FLOAT,
-        unity VARCHAR(50) NOT NULL,
-        ingredient INTEGER
-    )');
-}
-*/
