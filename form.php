@@ -1,8 +1,5 @@
 <?php
 
-// FAIRE EN SORTE QUE CHAQUE RECETTE POSSEDE UN NUMERO
-// ET QUE LORSQUE ON CRÉE UNE NOUVELLE RECETTE LE NUM EST INCRÉMENTÉ
-
 function add_new_ingredient (float $quantity,string $unity,string $ingredient,int $recipe_number): void{
     try {
         $pdo = new PDO('sqlite:'.dirname(__FILE__).'/database.db');
@@ -32,9 +29,6 @@ function add_new_ingredient (float $quantity,string $unity,string $ingredient,in
         var_dump($exception);
     }
 }
-
-
-//$number = 0;
 
 for ($i=0; $i < count($_POST)/3; $i++) { 
     $quantity = htmlspecialchars($_POST['quantity_'.$i]);
